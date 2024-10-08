@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Document</title>
+
+</head>
+<body>
+    <main>
+        <nav>
+            <div class="middle-nav">
+                <ul>
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#about-us">About Us</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <div class="right-nav">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Welcome Popup -->
+        <div class="welcome-popup"> 
+            <h2>Welcome!</h2>
+            <p>Step into the world of endless excitement!</p>
+            <p>Test your skills, outsmart your opponents,</p>
+            <p>and rise to the top in this fast-paced adventure.</p>
+            <button class="start" type="button" onclick="startGame()">Start</button>
+        </div>
+
+        <!-- Game Content -->
+        <div id="content-box" class="content-box">
+            <div class="user">
+                <button class="game" type="button" onclick="validateNameField()">Start The Game!</button>
+                <button class="game" type="button" onclick="closeGame()">Close</button>
+            </div>
+            <div class="level">
+                <input type="text" id="name" placeholder="Name" required>
+                <p id="messageDisplay" style="color: red;"></p>
+                <p>Score: <span id="score">0</span></p>
+                <p class="warning" id="warningMessage"></p>
+            </div>
+            <div class="box">
+                <div class="container">
+                    <div class="color-box green" onclick="handleUserClick('Green')">Green</div>
+                    <div class="color-box red" onclick="handleUserClick('Red')">Red</div>
+                </div>
+                <div class="container">
+                    <div class="color-box yellow" onclick="handleUserClick('Yellow')">Yellow</div>
+                    <div class="color-box blue" onclick="handleUserClick('Blue')">Blue</div>
+                </div>
+            </div>
+        </div>
+        <!-- Result Popup -->
+        <div id="resultPopup" class="result-popup"></div>
+
+
+        <script>
+            let score = 0;
+            let userClicks = [];
+            let sequence = [];
+
+            function startGame() {
+                document.querySelector(".welcome-popup").style.display = "none";
+                document.getElementById("content-box").classList.add("box-visible");
+            }
+            function closeGame() {
+                // Show the welcome popup again
+                document.querySelector(".welcome-popup").style.display = "block";
+                // Hide the game content
+                document.getElementById("content-box").classList.remove("box-visible");
+                // Reset the score and user clicks
+                score = 0;
+                userClicks = [];
+                document.getElementById("score").textContent = score;
+                document.getElementById('warningMessage').textContent = ""; // Clear warnings
+            }
+
+            function validateNameField() {
+                const nameField = document.getElementById("name").value;
+                const messageDisplay = document.getElementById("messageDisplay");
+
+                messageDisplay.textContent = '';
+                if (nameField.trim() === '') {
+                    messageDisplay.textContent = "Please enter your name!";
+                } else {
+                    startGameLogic();
+                }
+            }
+
+            const colors = ['Red', 'Green', 'Blue', 'Yellow'];
+
+            function getRandomColor() {
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            function generateRandomSequence(length) {
+                let sequence = [];
+                for (let i = 0; i < length; i++) {
+                    sequence.push(getRandomColor());
+                }
+                return sequence;
+            }
+
+            function startGameLogic() {
+                userClicks = [];
+                const sequenceLength = 5;
+                sequence = generateRandomSequence(sequenceLength);
+                showSequence(sequence);
+            }
+
+            function showSequence(sequence) {
+                let index = 0;
+                const interval = setInterval(() => {
+                    if (index < sequence.length) {
+                        const color = sequence[index];
+                        const box = document.querySelector(`.color-box.${color.toLowerCase()}`);
+                        box.classList.add('glow');
+                        setTimeout(() => {
+                            box.classList.remove('glow');
+                        }, 800);
+                        index++;
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 1200);
+            }
+
+            function handleUserClick(color) {
+    const warningMessage = document.getElementById('warningMessage');
+    const scoreDisplay = document.getElementById('score');
+    const resultPopup = document.getElementById('resultPopup');
+
+    // Play the sound corresponding to the clicked color
+    playColorSound(color);
+
+    userClicks.push(color);
+    const currentClickIndex = userClicks.length - 1;
+
+    // Check if the user clicked the wrong sequence
+    if (userClicks[currentClickIndex] !== sequence[currentClickIndex]) {
+        console.log("Lose sequence reached"); // Debugging log
+
+        // Reset the score to 0
+        score = 0;
+        scoreDisplay.textContent = score; // Update the score display to 0
+
+        // Show the lose result in the popup
+        resultPopup.textContent = "You Lose!";
+        resultPopup.classList.add("active"); // Display the popup
+
+        // Hide the popup after 2 seconds
+        setTimeout(() => {
+            resultPopup.classList.remove("active"); // Hide the popup
+        }, 2000);
+
+        userClicks = []; // Reset user clicks for the next round
+        return;
+    }
+
+    // Check if the user completed the sequence correctly
+    if (userClicks.length === sequence.length) {
+        console.log("Win sequence reached"); // Debugging log
+
+        // Increment and update the score
+        score++;
+        scoreDisplay.textContent = score; // Update the score display
+
+        // Show the win result in the popup
+        resultPopup.textContent = "You Win!";
+        resultPopup.classList.add("active"); // Display the popup
+
+        // Hide the popup after 2 seconds and start the next round
+        setTimeout(() => {
+            resultPopup.classList.remove("active"); // Hide the popup
+            startGameLogic(); // Start the next level
+        }, 2000);
+
+        userClicks = []; // Reset for next level
+    }
+}
+
+// Function to play the sound corresponding to the clicked color
+function playColorSound(color) {
+    let sound;
+    switch (color) {
+        case 'Green':
+            sound = new Audio('green.mp3');
+            break;
+        case 'Red':
+            sound = new Audio('red.mp3');
+            break;
+        case 'Yellow':
+            sound = new Audio('yellow.mp3');
+            break;
+        case 'Blue':
+            sound = new Audio('blue.mp3');
+            break;
+    }
+    if (sound) {
+        sound.play();
+    }
+}
+
+        </script>
+    </main>
+</body>
+</html>
